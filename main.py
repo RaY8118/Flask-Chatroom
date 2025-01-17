@@ -2,11 +2,17 @@ from flask import Flask, render_template, request, session, redirect, url_for
 from flask_socketio import join_room, leave_room, send, SocketIO
 import random
 from string import ascii_uppercase
+from flask_pymongo import PyMongo
+from datetime import datetime
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "KEY"
+app.config["MONGO_URI"] = "mongodb://localhost:27017/chat_app"
 socketio = SocketIO(app)
+mongo = PyMongo(app)
 
+
+rooms_collection = mongo.db.rooms
 rooms = {}
 
 
@@ -44,6 +50,8 @@ def home():
         if create != False:
             room = generate_unique_code(4)
             rooms[room] = {"members": 0, "message": []}
+            rooms_data = {"roomId": room, "members": 0, "messages": []}
+            rooms_collection.insert_one(rooms_data)
         elif code not in rooms:
             return render_template(
                 "home.html", error="Room does not exist.", code=code, name=name
@@ -71,10 +79,20 @@ def message(data):
     if room not in rooms:
         return
 
-    content = {"name": session.get("name"), "message": data["data"]}
+    content = {
+        "name": session.get("name"),
+        "message": data["data"],
+        "timestamp": str(datetime.utcnow()),
+    }
+
     send(content, to=room)
+
     rooms[room]["message"].append(content)
-    print(f"{session.get('name')} said {data['data']}")
+
+    messages = rooms[room]["message"]
+    rooms_collection.update_one({"roomId": room}, {"$set": {"messages": messages}})
+
+    print(f"{session.get('name')} said {data['data']} ")
 
 
 @socketio.on("connect")
@@ -91,6 +109,8 @@ def connect(auth):
     join_room(room)
     send({"name": name, "message": "has entered the room"}, to=room)
     rooms[room]["members"] += 1
+    curr_no_memb = rooms[room]["members"]
+    rooms_collection.update_one({"roomId": room}, {"$set": {"members": curr_no_memb}})
     print(f"{name} joined room {room}")
 
 
@@ -102,6 +122,10 @@ def disconnect():
 
     if room in rooms:
         rooms[room]["members"] -= 1
+        curr_no_memb = rooms[room]["members"]
+        rooms_collection.update_one(
+            {"roomId": room}, {"$set": {"members": curr_no_memb}}
+        )
         if rooms[room]["members"] <= 0:
             del rooms[room]
 
