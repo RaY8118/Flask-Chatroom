@@ -1,18 +1,27 @@
-{% extends 'base.html'%} {%block content%}
-<form method="post" class="buttons">
-  <h3>Enter the ChatRoom</h3>
-  <div>
-    <label>Name:</label>
-    <input type="text" placeholder="Pick a name" name="name" value="{{name}}" />
+{% extends 'base.html' %}
+{% block content %}
+  <div class="flex flex-col justify-center items-center mt-10">
+  <h3 class="text-2xl font-bold mb-6">Enter the ChatRoom</h3>
+<form method="post" class="flex flex-col w-full h-full items-center gap-4 max-w-md border border-black p-5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500">
+
+  <div class="flex flex-col gap-2 w-full">
+      <label for="name" class="text-sm font-medium">Name:</label>
+      <input type="text" placeholder="Enter Name" name="name" value="{{ name }}" class="w-full p-2 border border-black rounded-md"/>
   </div>
-  <div class="join">
-    <input type="text" placeholder="Room Code" name="code" value="{{code}}" />
-    <button type="submit" name="join">Join a button</button>
+
+  <div class="flex flex-col gap-2 w-full">
+      <label for="code" class="text-sm font-medium">Room Code:</label>
+      <input type="text" placeholder="Room Code" name="code" value="{{ code }}" class="w-full p-2 border border-black rounded-md"/>
   </div>
-  <button type="submit" name="create" class="create-btn">Create a Room</button>
+
+    <button type="submit" name="join" class="w-full p-2 bg-red-500 text-white rounded-md hover:bg-red-600 border border-white">Join</button>
+  <button type="submit" name="create" class="w-full p-2 bg-green-500 text-white rounded-md hover:bg-green-600 border border-white create-btn">Create a Room</button>
 </form>
-{% if error%}
-<ul>
-  <li>{{error}}</li>
+</div>
+{% if error %}
+<ul class="mt-4 text-red-500">
+  <li>{{ error }}</li>
 </ul>
-{% endif%} {%endblock%}
+{% endif %}
+
+{% endblock %}

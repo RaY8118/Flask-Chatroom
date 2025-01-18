@@ -1,16 +1,23 @@
-{%extends 'base.html'%} {%block content%}
-<div class="message-box">
-  <h2>Chat Room: {{code}}</h2>
-  <div class="message" id="messages"></div>
-  <div class="inputs">
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="flex items-center justify-center mt-4">
+<div class="message-box p-4 border-2 border-black rounded-lg bg-whitesmoke h-[80vh] w-[80vw] flex flex-col">
+  <h2 class="text-2xl font-bold text-center mb-4">Chat Room: {{ code }}</h2>
+
+  <div class="message flex-1 overflow-y-scroll mb-4 p-2 border border-gray-300 rounded-md" id="messages">
+  </div>
+  <div class="inputs flex gap-2 w-full">
     <input
       type="text"
       rows="3"
       placeholder="Message"
       name="message"
       id="message"
+      class="w-full p-2 border border-gray-300 rounded-md"
     />
-    <button type="button" name="send" id="send=btn" onClick="sendMessage()">
+    <button type="button" name="send" id="send-btn" onClick="sendMessage()"
+      class="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
       Send
     </button>
   </div>
@@ -19,21 +26,22 @@
   var socketio = io();
   const messages = document.getElementById("messages");
 
-  const createMessage = (name, msg) => {
+  const createMessage = (name, msg, timestamp) => {
     const content = `
-    <div class="text">
+    <div class="flex flex-row items-center justify-between pl-4 pr-4">
     <span>
       <strong>${name}</strong>: ${msg}
     </span>
-    <span class="muted"> ${new Date().toLocaleString()}</span>
+<span class="text-gray-500 text-xs">${timestamp !== undefined && timestamp !== null ? String(timestamp) : ""}</span>
   </div>
 `;
     messages.innerHTML += content;
   };
 
   socketio.on("message", (data) => {
-    createMessage(data.name, data.message);
+    createMessage(data.name, data.message, data.timestamp);
   });
+
   const sendMessage = () => {
     const message = document.getElementById("message");
     if (message.value == "") return;
@@ -44,6 +52,9 @@
 
 {%for msg in messages%}
 <script type="text/javascript">
-  createMessage("{{msg.name}}", "{{msg.message}}");
+createMessage("{{msg.name}}", "{{msg.message}}", "{{msg.timestamp}}")
 </script>
-{%endfor%} {%endblock%}
+{%endfor%}
+
+</div>
+{%endblock%}
