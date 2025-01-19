@@ -21,16 +21,16 @@ app.config["SESSION_MONGODB_DB"] = "chat_app"
 app.config["SESSION_MONGODB_COLLECT"] = "sessions"
 app.config["SESSION_PERMANENT"] = False
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 Session((app))
 
 rooms_collection = mongo.db.rooms
 messages_collection = mongo.db.messages
 
 
-def generate_unique_code(Length):
+def generate_unique_code(length):
     while True:
-        code = "".join(random.choice(ascii_uppercase) for _ in range(Length))
+        code = "".join(random.choice(ascii_uppercase) for _ in range(length))
         if not rooms_collection.find_one({"roomId": code}):
             return code
 
@@ -132,7 +132,7 @@ def connect(auth):
     print(f"{name} joined room {room}, {datetime.utcnow()} ")
 
 
-@socketio.on("disconnect")
+@socketio.on("disconnected")
 def disconnect():
     room = session.get("room")
     name = session.get("name")

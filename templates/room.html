@@ -1,11 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="flex items-center justify-center mt-4">
-<div class="message-box p-4 border-2 border-black rounded-lg bg-whitesmoke h-[80vh] w-[80vw] flex flex-col">
-  <h2 class="text-2xl font-bold text-center mb-4">Chat Room: {{ code }}</h2>
+  <div class="flex flex-col items-center justify-center m-9">
+  <div class="flex flex-row justify-between w-full">
+  <h2 class="text-2xl font-bold text-center mb-4 flex-1">Chat Room: {{ code }}</h2>
+    <button type="button" name="leave" id="leave-btn" onClick="leaveRoom()"
+      class="p-2 m-2 w-auto bg-red-500 text-white rounded-md hover:bg-red-600 border border-black mr-8">
+      Leave Room 
+    </button>
+      </div>
+<div class="message-box p-4 border-4 border-black rounded-lg bg-gray-200 h-[85vh] w-[90vw] flex flex-col">
 
-  <div class="message flex-1 overflow-y-scroll mb-4 p-2 border border-gray-300 rounded-md" id="messages">
+  <div class="message flex-1 overflow-y-scroll mb-4 p-2 border-2 border-gray-500 rounded-md" id="messages">
   </div>
   <div class="inputs flex gap-2 w-full">
     <input
@@ -14,10 +20,10 @@
       placeholder="Message"
       name="message"
       id="message"
-      class="w-full p-2 border border-gray-300 rounded-md"
+      class="w-full p-2 border-2 border-gray-500 rounded-md"
     />
     <button type="button" name="send" id="send-btn" onClick="sendMessage()"
-      class="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+      class="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 border border-black">
       Send
     </button>
   </div>
@@ -32,9 +38,9 @@
     <span>
       <strong>${name}</strong>: ${msg}
     </span>
-<span class="text-gray-500 text-xs">${timestamp !== undefined && timestamp !== null ? String(timestamp) : ""}</span>
-  </div>
-`;
+    <span class="text-gray-500 text-xs">${timestamp !== undefined && timestamp !== null ? String(timestamp) : ""}</span>
+    </div>
+  `;
     messages.innerHTML += content;
   };
 
@@ -48,6 +54,30 @@
     socketio.emit("message", { data: message.value });
     message.value = "";
   };
+
+  const leaveRoom = () => {
+    const message = "You have left the room";
+
+    socketio.emit("disconnected");
+
+    messages.innerHTML += `
+  <div class="flex flex-row items-center justify-center pl-4 pr-4 mt-4">
+  <span><strong>You have left the room.</strong></span>
+  </div>
+  `
+
+  document.getElementById("message").disabled = true
+  document.getElementById("send-btn").disabled = true
+  document.getElementById("leave-btn").disabled = true
+  
+  alert("You have successfully left the room.")
+
+  setTimeout(() => {
+      window.location.href = "/";
+    }, 1000);
+  document.getElementById("leave-btn").addEventListener("click", leaveRoom);
+  }
+
 </script>
 
 {%for msg in messages%}
